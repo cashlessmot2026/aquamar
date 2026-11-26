@@ -1,0 +1,15 @@
+# Claves privadas: nunca subir a GitHub
+secrets/
+*firebase-adminsdk*.json
+.env
+.env.*
+
+# Dependencias y archivos temporales
+tools/node_modules/
+node_modules/
+.playwright-mcp/
+zz-test-*.html
+*.tmp
+.DS_Store
+Thumbs.db
+desktop.ini

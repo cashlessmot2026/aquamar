@@ -1,0 +1,121 @@
+/* ==================== REACT: AJUSTES Y COMPONENTES (tema claro) ==================== */
+.btn{will-change:transform;-webkit-tap-highlight-color:transparent;}
+.btn:active{transform:scale(.97);}
+.btn-pill{border-radius:var(--pill);}
+.b-orange{background:#ffedd5;color:#c2410c;border:1px solid #fed7aa;}
+.btn-ok{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border-color:transparent;box-shadow:0 6px 18px rgba(22,163,74,.22);}
+.btn-warn{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border-color:transparent;}
+.card{animation:fadeUp .25s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.view-enter{animation:fadeUp .22s ease both;}
+.modal-bg{display:flex;}
+.login-switch{margin-top:14px;text-align:center;font-size:12px;color:var(--muted);}
+.sup-hint{margin-top:14px;font-size:11px;color:var(--muted);text-align:center;}
+.select-inline{flex:1;padding:9px 12px;border-radius:12px;border:1px solid #cfd8e6;background:#fff;color:var(--ink);font-size:13px;min-width:0;}
+
+/* ============ SUPERVISOR ============ */
+.sup-wrap{max-width:960px;margin:0 auto;padding:calc(14px + var(--sat)) 14px calc(90px + var(--sab));min-height:100vh;min-height:100dvh;}
+.sup-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap;}
+.sup-title{font-size:22px;font-weight:800;margin:8px 0 2px;color:var(--ink);}
+.sup-sub{color:var(--muted);font-size:12.5px;margin-bottom:16px;}
+.sup-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;}
+.sup-room{padding:18px;border-top:4px solid #f59e0b;}
+.sup-room .num{font-size:34px;font-weight:900;line-height:1;color:var(--navy);}
+.sup-room .meta{margin:8px 0 14px;font-size:12.5px;color:var(--muted);line-height:1.6;}
+.sup-room .meta b{color:var(--ink);}
+.sup-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.sup-actions .full{grid-column:1/-1;}
+
+/* ============ BANNERS ============ */
+.banner{padding:12px 14px;border-radius:16px;margin-bottom:14px;font-size:13px;display:block;color:var(--ink);line-height:1.5;}
+.banner::after{content:'';display:block;clear:both;}
+.banner > .btn{float:right;margin:-3px 0 -3px 10px;}
+.banner .badge{margin:1px 2px;}
+.banner-info{background:#eaf2ff;border:1px solid #c7d9ff;}
+.banner-warn{background:#fff8e1;border:1px solid #f6dd8b;}
+.banner-err{background:#fdecec;border:1px solid #f7bcbc;}
+.pulse-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--green);margin-right:6px;animation:pulse 1.6s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(22,163,74,.5);}100%{box-shadow:0 0 0 10px rgba(22,163,74,0);}}
+.radio-row{display:flex;gap:10px;flex-wrap:wrap;}
+
+/* ============ SPLASH (azul marino, logo blanco: igual que el ícono de la app) ============ */
+.splash{position:fixed;inset:0;background:#061045;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:9999;gap:16px;color:rgba(255,255,255,.75);font-size:13px;}
+.splash .logo{align-items:center;}
+.splash .logo-img{height:110px;cursor:default;}
+
+/* ============ INVENTARIO (checklist del aseo) ============ */
+.inv-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;max-height:52vh;max-height:52dvh;overflow-y:auto;padding-right:2px;}
+.inv-cat{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:8px 0 0;}
+.inv-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;}
+.inv-row.good{border-color:#86efac;background:#f0fdf4;}
+.inv-row.bad{border-color:#fca5a5;background:#fef2f2;}
+.inv-name{display:flex;flex-direction:column;min-width:0;}
+.inv-name b{overflow-wrap:anywhere;color:var(--ink);}
+.inv-ctrl{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.inv-ctrl .btn{min-width:40px;min-height:40px;padding:0 10px;}
+.inv-qty{min-width:26px;text-align:center;font-weight:800;font-size:17px;color:var(--ink);}
+
+/* ============ INSTALAR APP (PWA) ============ */
+.sidebar-foot .btn{width:100%;}
+.install-card{display:flex;align-items:center;gap:12px;margin-top:16px;padding:12px 14px;text-align:left;}
+.install-card img{width:44px;height:44px;border-radius:11px;flex-shrink:0;}
+.install-card .txt{flex:1;min-width:0;font-size:12.5px;color:var(--muted);line-height:1.4;}
+.install-card .txt b{display:block;color:var(--ink);font-size:13.5px;}
+.install-steps{list-style:none;counter-reset:st;display:flex;flex-direction:column;gap:10px;margin:6px 0 14px;}
+.install-steps li{counter-increment:st;display:flex;gap:12px;align-items:flex-start;font-size:13.5px;line-height:1.5;}
+.install-steps li::before{content:counter(st);flex:0 0 26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;
+  font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;}
+.kbd{display:inline;padding:1px 7px;border-radius:7px;background:#eef1f6;border:1px solid var(--line);font-weight:700;font-size:12.5px;-webkit-box-decoration-break:clone;box-decoration-break:clone;line-height:1.9;}
+
+/* ============ MÓVIL / IPHONE / PC ============ */
+/* iOS hace zoom en campos con letra < 16 px: en pantallas táctiles se usa 16 px. */
+@media (max-width:880px), (pointer:coarse){
+  .field input,.field select,.field textarea,.toolbar input,.toolbar select,.select-inline{font-size:16px;}
+}
+@media (pointer:coarse){
+  .btn{min-height:44px;}
+  .btn-sm{min-height:38px;}
+  tbody tr:hover{background:transparent;}
+}
+@media (max-width:520px){
+  #toastWrap{left:12px;right:12px;}
+  .toast{min-width:0;}
+  .topbar h1{font-size:19px;}
+  .modal{padding:20px 16px;border-radius:18px;}
+  .scan-btns{grid-template-columns:1fr;}
+  .sup-actions{grid-template-columns:1fr;}
+}
+/* Modal tipo hoja inferior en celulares: más cómodo con el pulgar. */
+@media (max-width:520px) and (pointer:coarse){
+  .modal-bg{align-items:flex-end;padding:calc(12px + var(--sat)) 0 0;}
+  .modal{max-width:none;border-radius:22px 22px 0 0;padding-bottom:calc(20px + var(--sab));max-height:calc(100dvh - 12px - var(--sat));}
+}
+/* App instalada (standalone): sin rebote al hacer scroll ni selección accidental. */
+@media (display-mode: standalone){
+  body{overscroll-behavior-y:none;}
+  .logo-img,.btn,.navitem{-webkit-user-select:none;user-select:none;}
+}
+/* PC: más aire en pantallas grandes. */
+@media (min-width:1400px){
+  .main{padding-left:40px;padding-right:40px;}
+  .cards-grid{grid-template-columns:repeat(auto-fit,minmax(190px,1fr));}
+}
+@media print{
+  .sidebar,.mobile-topbar,#toastWrap,.install-card{display:none !important;}
+  body{background:#fff;}
+}
+/* Encabezados de aseo y supervisor: botones siempre en una fila. */
+.emp-head .tag-row,.sup-head .tag-row{flex-wrap:nowrap;}
+.sup-head{flex-wrap:nowrap;}
+@media (max-width:420px){
+  .emp-head .logo-sub,.sup-head .logo-sub{display:none;}
+}
+/* Botón Ocupar bloqueado (habitación en proceso de limpieza/verificación). */
+.btn-locked{background:#eef1f6;color:var(--muted);border:1px dashed #c3cede;flex-direction:column;gap:0;line-height:1.15;padding:5px 12px;}
+.btn-locked:disabled{opacity:1;}
+.btn-locked .lock-why{font-size:10px;font-weight:600;}
+/* Vista previa del QR (SVG nítido) */
+.qr-canvas-box{padding:15px;box-sizing:border-box;}
+.qr-svg svg{width:100%;height:100%;display:block;}
+.qr-empty{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;background:#f4f7fc;border-radius:8px;}

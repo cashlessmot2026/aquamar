@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AQUAMARE · Housekeeping</title>
+<meta name="description" content="Aquamare Hotel · Control de limpieza, verificación e inventario de habitaciones.">
+<meta name="application-name" content="Aquamare">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
+<!-- PWA: instalación como aplicación (manifest por interfaz, generado por tools/build.mjs) -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#ffffff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Aquamare">
+<meta name="format-detection" content="telephone=no">
+<script>
+/* Cada interfaz (?app=aseo|supervisor|admin) se instala como su propia app: manifest y nombre en iPhone según la URL. */
+(function(){var p=new URLSearchParams(location.search),v=p.get('app')||p.get('view')||((p.get('r')||p.get('room'))?'aseo':null);
+var m={aseo:['manifest-aseo.json','Aquamare Aseo'],supervisor:['manifest-supervisor.json','Aquamare Supervisor'],admin:['manifest-admin.json','Aquamare Recepción']}[v];
+if(m){document.querySelector('link[rel=manifest]').setAttribute('href',m[0]);
+document.querySelector('meta[name=apple-mobile-web-app-title]').setAttribute('content',m[1]);}
+/* Android y PC (Chrome/Edge): se guarda el aviso de instalación para mostrarlo desde el botón «Instalar». */
+window.__bip=null;
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__bip=e;window.dispatchEvent(new Event('bip-ready'));});
+})();
+</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+/*STYLES*/
+</style>
+</head>
+<body>
+<div id="root"><div class="splash"><div class="logo"><img class="logo-img" src="icons/logo-aquamare.png" alt="Aquamare Hotel"></div><div>Cargando...</div></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+<script>
+/*APP*/
+</script>
+</body>
+</html>
