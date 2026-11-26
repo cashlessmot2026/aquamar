@@ -235,6 +235,13 @@ function handleRoomCode(code, emp) {
     openModal(<><h2>📌 Servicio de otro colaborador</h2><p className="small muted">La habitación {room.number} está asignada a {empById(room.assignedTo)?.name || 'otro colaborador'}.</p></>);
     return;
   }
+  // Un servicio a la vez: con otra habitación tomada o asignada (sin terminar) no se puede iniciar esta.
+  const other = DB.rooms.find(r => r.id !== room.id && r.assignedTo === emp.id && r.status === 'PENDIENTE DE LIMPIEZA');
+  if (other) {
+    openModal(<><h2>📌 Ya tienes un servicio</h2><p className="small muted">Tienes tomada la habitación <b>{other.number}</b>. Escanea su QR e inicia esa limpieza; cuando la termines podrás tomar otra.</p>
+      <button className="btn btn-primary" style={{ width: '100%', marginTop: 10 }} onClick={closeModal}>Entendido</button></>);
+    return;
+  }
   if (room.status === 'EN VERIFICACIÓN') {
     openModal(<><h2>🔎 En verificación</h2><p className="small muted">La habitación {room.number} está esperando la verificación del supervisor.</p></>);
     return;

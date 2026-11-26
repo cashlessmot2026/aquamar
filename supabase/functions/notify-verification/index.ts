@@ -1,7 +1,8 @@
 // Edge Function: notify-verification
 // La llama el trigger de `rooms` con { kind, room_id, number, status, assigned_to } y envía push FCM (HTTP v1):
 //   - status = 'EN VERIFICACIÓN'      -> a los supervisores (role = 'VL')
-//   - status = 'PENDIENTE DE LIMPIEZA' -> al personal de aseo disponible (rol limpieza, sin una limpieza en curso)
+//   - status = 'PENDIENTE DE LIMPIEZA' -> solo al aseo DISPONIBLE (rol limpieza activo, sin limpieza iniciada
+//                                         y sin otra habitación tomada/asignada sin terminar)
 //   - kind   = 'assigned'              -> solo al colaborador al que le asignaron la habitación
 //   - kind   = 'inventory'             -> a los administradores (role = 'ADMIN'): inventario con diferencias o cambios
 // Secret requerido: FCM_SERVICE_ACCOUNT (JSON completo de la cuenta de servicio de Firebase).
@@ -87,14 +88,18 @@ async function handler(req: Request): Promise<Response> {
     body = `Habitación ${number} lista para verificación`;
     link = BASE + "?view=supervisor";
   } else if (p.status === "PENDIENTE DE LIMPIEZA") {
-    // Aseo disponible: rol limpieza activo y sin una limpieza en curso.
-    const [{ data: emps }, { data: busy }, { data: toks }] = await Promise.all([
+    // Solo al aseo DISPONIBLE: rol limpieza activo y sin ningún servicio en curso, es decir
+    // sin una limpieza iniciada y sin otra habitación tomada/asignada pendiente de terminar.
+    const [{ data: emps }, { data: busy }, { data: taken }, { data: toks }] = await Promise.all([
       supabase.from("employees").select("id").eq("cleaning_role", true).in("status", ["ACTIVA", "EN TURNO"]),
       supabase.from("cleaning_sessions").select("employee_id").eq("status", "EN_LIMPIEZA"),
+      supabase.from("rooms").select("id, assigned_to").not("assigned_to", "is", null)
+        .in("status", ["PENDIENTE DE LIMPIEZA", "EN LIMPIEZA"]),
       supabase.from("push_tokens").select("token, employee_id").eq("role", "EMPLEADA"),
     ]);
     const ok = new Set((emps ?? []).map((e: { id: string }) => e.id));
     (busy ?? []).forEach((b: { employee_id: string }) => ok.delete(b.employee_id));
+    (taken ?? []).forEach((r: { id: string; assigned_to: string }) => { if (r.id !== p.room_id) ok.delete(r.assigned_to); });
     tokens = (toks ?? []).filter((t: { employee_id: string }) => ok.has(t.employee_id)).map((t: { token: string }) => t.token);
     title = "Habitación por limpiar";
     body = `La habitación ${number} está lista para limpieza. ¡Toma el servicio!`;
