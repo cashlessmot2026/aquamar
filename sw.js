@@ -1,7 +1,7 @@
 'use strict';
 
 // Service worker de la app (caché offline). Las push las maneja firebase-messaging-sw.js.
-const CACHE_VERSION = 'aquamare-housekeeping-v2';
+const CACHE_VERSION = 'aquamare-housekeeping-v3';
 const PRECACHE_URLS = [
   './',
   './index.html',
@@ -22,7 +22,7 @@ const PRECACHE_URLS = [
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js',
+  'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
   'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',
   'https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js'
