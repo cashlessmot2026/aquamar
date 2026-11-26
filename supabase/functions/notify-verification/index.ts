@@ -110,6 +110,7 @@ async function handler(req: Request): Promise<Response> {
   const accessToken = await getAccessToken(JSON.parse(saRaw));
 
   let sent = 0, removed = 0;
+  const errors: string[] = [];
   for (const token of tokens) {
     const res = await fetch(`https://fcm.googleapis.com/v1/projects/${FCM_PROJECT_ID}/messages:send`, {
       method: "POST",
@@ -136,14 +137,19 @@ async function handler(req: Request): Promise<Response> {
     });
     if (res.ok) { sent++; continue; }
     const err = await res.text();
-    if (err.includes("UNREGISTERED") || err.includes("NOT_FOUND") || err.includes("INVALID_ARGUMENT")) {
+    // Solo se borra el dispositivo si FCM dice que ESE token ya no sirve. Un error del mensaje
+    // (INVALID_ARGUMENT por un campo) no debe borrar los registros de todos.
+    const deadToken = res.status === 404 || err.includes("UNREGISTERED") ||
+      (err.includes("INVALID_ARGUMENT") && /registration token|token is not a valid/i.test(err));
+    if (deadToken) {
       await supabase.from("push_tokens").delete().eq("token", token);
       removed++;
     } else {
       console.error("FCM error", res.status, err);
+      if (errors.length < 3) errors.push(`${res.status}: ${err.slice(0, 300)}`);
     }
   }
-  return json({ sent, removed });
+  return json(errors.length ? { sent, removed, errors } : { sent, removed });
 }
 
 Deno.serve(handler);
