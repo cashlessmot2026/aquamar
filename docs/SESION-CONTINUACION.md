@@ -1,76 +1,82 @@
-# AQUAMARE · Housekeeping (antes CASHLESS COLOMBIA) — Estado de la sesión
+# AQUAMARE · Housekeeping — Historial y estado del trabajo
 
-Guardado el 2026-10-18 · actualizado el 2026-11-25 (migración a Aquamar + inventario + marca AQUAMARE). Para retomar: abre Claude Code en `C:\Users\victo\OneDrive\Desktop\limpieza` y pide "lee docs/SESION-CONTINUACION.md y continúa".
+**Última actualización:** 2026-11-25 (noche) · último commit `560ee35`
+**Para retomar:** abre Claude Code en `C:\Users\victo\OneDrive\Desktop\limpieza` y escribe:
+> lee docs/SESION-CONTINUACION.md y continúa
 
-## ▶ Último estado (2026-11-25, noche)
-- El usuario confirmó desplegado en Supabase `gfqukwxiaftxppjcdtjz`: `supabase/aquamar-setup.sql`, Edge Function `notify-verification` y secret `FCM_SERVICE_ACCOUNT`.
-- Verificado en vivo: las 12 tablas responden; `inventory_items` tiene los 9 artículos; usuarios `admin` (ADMIN) y `sr` (VL); 2 pisos, 1 habitación, 2 colaboradores (datos reales del usuario: no borrar). La función responde (`{"kind":"ping"}` → `ignored:true`).
-- `push_tokens` vacía: ningún celular ha pulsado aún «Activar notificaciones» (admin en Inventario, VL y aseo en su panel).
-- Pendiente: que cada dispositivo active notificaciones y hacer una prueba real de inventario con diferencia (debe llegar push al admin).
-- Datos reales en la nueva base: no borrar. Mis pruebas solo con ids `TEST-` y se limpian.
-- **Push no llegaba (2026-11-25):** la función respondía `Falta el secret FCM_SERVICE_ACCOUNT` (el secret no estaba en el proyecto nuevo). Por pedido del usuario la clave se copió a `secrets/house-53644-firebase-adminsdk-fbsvc-5c336daf13.json` (protegida con `.gitignore`; NUNCA leerla, mostrarla ni publicarla; al publicar solo se copian los archivos del sitio). El usuario la cargó en Supabase → la prueba directa (`kind: assigned`, `number: PRUEBA`) devolvió `{"sent":1}` ✅. Se probó también el trigger con la habitación temporal TEST 9999 (DISPONIBLE → PENDIENTE DE LIMPIEZA, ya borrada); falta que el usuario confirme si le llegó a victor. El usuario ejecutó el fix de OCUPADA (regla confirmada con OCUPADA) y la prueba con TEST 9999 guardó estado, check-in y check-out ✅.
-- **Push solo al aseo disponible (2026-11-25):** el usuario confirmó que ya le llegan las push. Regla: «habitación por limpiar» (tras check-out) solo a aseo DISPONIBLE = rol limpieza + ACTIVA/EN TURNO + sin sesión EN_LIMPIEZA + sin otra habitación tomada/asignada (PENDIENTE/EN LIMPIEZA). La función ya excluye a los que tienen servicio tomado (antes solo excluía limpiezas iniciadas). En la app, `handleRoomCode` impide iniciar otra habitación si hay una tomada. Se mantuvo el aviso «Servicio asignado» (solo se puede asignar a quien está libre). **Redesplegar la función.**
-- **Revisión de la función (2026-11-25, commit 8945d2e):** API correcta (FCM HTTP v1 `projects/house-53644/messages:send`, OAuth `firebase.messaging`); proyecto igual en función, `core.js` y SW. Riesgo corregido: antes borraba el token ante cualquier INVALID_ARGUMENT; ahora solo si el token está muerto (404/UNREGISTERED) y devuelve `errors`. Prueba real a victor: `{"sent":1,"removed":1}` (1 entregado; 1 registro viejo de victor eliminado por FCM). **El usuario debe redesplegar la función** para tener la versión nueva.
-- **Repo completo (2026-11-25, commit a89984a):** la carpeta del proyecto ES ahora el repo git (`origin` = cashlessmot2026/aquamar, rama `main`). Publicar = `cd tools && node build.mjs && cd .. && git add -A && git commit && git push` (ya no se usa la copia en scratchpad). `.gitignore` excluye `secrets/`, `*firebase-adminsdk*.json`, `node_modules`, `.playwright-mcp`, `zz-test-*`. El repo es PÚBLICO: no escribir correos ni secretos en docs.
-- **QR nítido (2026-11-25, commit 1e7899c):** `QR.svg(text)` (vectorial, crispEdges) para pantalla (`QrCanvas`) e impresión (`roomLabelHtml` / `printRoomLabels`, QR 70 mm); `QR.EC = 'Q'`, margen 4 módulos. Enlace corto `roomLink` = `…/aquamar/?r=ROOM-xxx` (37×37 módulos; `?room=` sigue aceptado; `?r=` fuerza APP_MODE aseo). `downloadRoomQr` genera etiqueta PNG 1200×1650. Probado: decodifica a 110 px.
-- **Cámara / permisos (2026-11-25, commit e14e0cc):** `QR.open` devuelve `{ok, reason}` (denied | nocamera | busy | insecure | unsupported | error); `QrScan` + `CameraHelp` en `src/employee.jsx` muestran estado y pasos por plataforma (Android / iPhone / PC, aviso si es navegador de WhatsApp/Instagram), botón Reintentar y aviso a los 8 s si el permiso no se contesta. Loop híbrido: nativo + jsQR (si el nativo da vacío o 3 errores → solo jsQR). 1920x1080 + `focusMode: continuous`. Probado: con permiso abre; bloqueado muestra ayuda; nativo vacío/erróneo igual lee (≈250 ms). Pendiente: el usuario confirme en su celular (qué modelo/navegador y qué mensaje ve).
-- **QR / NFC (2026-11-25, commit 66c8dbd):** `QR.renderVisual` dibujaba un patrón FALSO (no era un QR) → ahora QR real con `qrcode-generator` (cdnjs 1.4.4). Contenido = `roomLink(code)` = `…/aquamar/?app=aseo&room=ROOM-xxx`; `EmployeeApp` toma `?room=` al abrir (`takeRoomParam`). `findRoomByCode`/`parseRoomCode` en core aceptan enlace, ROOM-, NFC-ROOM- o número. Escáner con `QR.loop` (120 ms, imagen ≤720 px). `printRoomLabels(rooms)` (iframe) y `downloadRoomQr(room)`; botón «Imprimir QR de todas» en Habitaciones. NFC: AbortController (`NFC.stop`), TAG graba url + text; sin Web NFC → `NfcHelp` (iPhone lee el enlace nativo). **Todos los QR impresos antes son inválidos: reimprimir. TAG grabados antes (solo texto) siguen sirviendo en Android; regrabar para iPhone.** Ojo en pruebas: llamar `print()` en Playwright bloquea el navegador; stubear `contentWindow.print`.
-- **Push con app abierta (2026-11-25):** diagnóstico con navegador `TEST-diag` (token borrado): la cadena Supabase → FCM → navegador FUNCIONA; con la app en pantalla FCM entrega a `onMessage` y solo salía el aviso interno. Ahora `onMessage` también llama `reg.showNotification` (verificado). App cerrada/otra pestaña: la muestra `firebase-messaging-sw.js`. Función con `webpush.headers Urgency: high` + icon/badge/tag → **el usuario debe redesplegar** `supabase functions deploy notify-verification --no-verify-jwt`. jsQR de cdnjs daba 404 → ahora jsDelivr (commit e08adc7). La función no tiene CORS (no hace falta: la llaman los triggers).
-- **Ocupar bloqueado (2026-11-25):** en Habitaciones, mientras no esté DISPONIBLE se ve «🔒 Ocupar» con la etapa (`OCCUPY_LOCK` en `src/admin.jsx`). `transitionRoom` devuelve true / false (otro la cambió) / null (la nube rechazó; ya avisó). Publicado (commit 4511b84).
-- **Bug «Ocupar» (2026-11-25):** la nube devolvía 23514 `rooms_status_check` sin 'OCUPADA' (probablemente se corrió también un SQL antiguo). Solución: el usuario debe ejecutar `supabase/fix-2026-11-25-estado-ocupada.sql`. Los SQL antiguos quedaron marcados «NO EJECUTAR». La app ahora muestra el motivo real del rechazo. Verificar después con una habitación `TEST-ROOM-9999` temporal (crear → PATCH a OCUPADA → borrar).
+---
 
-## Proyecto
-- App de control de limpieza hotelera (PWA, React por CDN, un solo `index.html` generado).
-- **Desde 2026-11-25** publicada en https://cashlessmot2026.github.io/aquamar/ (repo `cashlessmot2026/aquamar`, rama `main`, se publica con `git push` vía `gh` logueado como cashlessmot2026). Antes: `cashlesscolombia-blip/limpieza`.
-- Supabase: proyecto **`gfqukwxiaftxppjcdtjz`** (llave publicable en `src/core.js`; el correo de la cuenta está en la memoria local de Claude, no en el repo). Antes `redljbblmveabflxeddv`. Firebase: proyecto `house-53644` (configs públicas ya en `src/core.js` y `firebase-messaging-sw.js`).
-- No es repo git local. Yo subo a GitHub desde el navegador (subida web); el usuario sube SQL a Supabase y despliega la Edge Function.
+## ▶ Estado actual (resumen)
+- App web instalable (PWA) **AQUAMARE** (Aquamare Hotel), tema claro (blanco / azules / negro).
+- Publicada en **https://cashlessmot2026.github.io/aquamar/** — repo público `cashlessmot2026/aquamar`, rama `main`.
+- Base de datos **Supabase `gfqukwxiaftxppjcdtjz`** (instalada con `supabase/aquamar-setup.sql` + `fix-2026-11-25-estado-ocupada.sql`). El correo de la cuenta está en la memoria local de Claude (no en el repo).
+- Notificaciones push **funcionando** (el usuario confirmó que le llegan). Firebase `house-53644`, Edge Function `notify-verification`, secret `FCM_SERVICE_ACCOUNT` cargado.
+- Funciona: login por rol, ocupar / check-in / check-out (con «🔒 Ocupar» bloqueado hasta la verificación), servicios de limpieza (un servicio a la vez), escaneo QR real, NFC, inventario de habitación con alertas al admin, verificación del supervisor, dashboard con gráficas, instalación como app en Android / iPhone / PC.
+
+## ⏳ Pendientes
+1. **Redesplegar la Edge Function** (hay cambios subidos al repo que aún no están en Supabase):
+   `supabase functions deploy notify-verification --no-verify-jwt`
+   Incluye: push «habitación por limpiar» solo al aseo DISPONIBLE (excluye a quien tiene servicio tomado/asignado), no borrar tokens por errores del mensaje (devuelve `errors`), urgencia alta + ícono/tag.
+2. **Reimprimir todos los QR** (Habitaciones → «🖨️ Imprimir QR de todas»): los impresos antes del 2026-11-25 eran un dibujo sin datos.
+3. **Regrabar los TAG NFC** (Editar habitación → «📶 Asignar TAG», en Chrome Android) para que el iPhone también los lea.
+4. Confirmar en celular real que el escáner QR lee las etiquetas nuevas. Si falla: pedir el mensaje que muestra la ventana de escaneo y el modelo / navegador.
+5. Cada dispositivo debe pulsar «Activar notificaciones» (admin en Inventario; supervisor y aseo en su panel). iPhone: app instalada en inicio, iOS ≥ 16.4.
+6. Opcional (consultado al usuario, sin respuesta): quitar el aviso «Servicio asignado» si el aseo debe recibir solo «habitación por limpiar».
+7. Opcional (idea): avisar a un colaborador que queda libre si ya hay habitaciones por limpiar sin tomar.
 
 ## Reglas del usuario (respetar)
 - No pedir permiso para seguir con lo que falte; subir al repo lo necesario.
-- Clave privada de cuenta de servicio de Firebase (`Downloads\house-53644-firebase-adminsdk-fbsvc-*.json`): **nunca leerla, pegarla en el chat ni subirla al repo**. Solo vive como secret `FCM_SERVICE_ACCOUNT` en Supabase (ya cargado).
-- No poner secretos en el repo. No mostrar contraseñas de usuarios al inspeccionar la base.
-- Fuera de alcance / deuda aceptada: RLS abiertas (`anon_full_access`), contraseñas en texto plano, Cloudflare R2/fotos.
-- No borrar datos reales: `admin`, `vl001` (victor lopez, VL), colaborador `andres` (id `EMP-mve3j3z27fkj9`, doc "1", sin código), piso 1, habitaciones 102 y 103. Mis pruebas solo usan ids/prefijos `TEST-` y se limpian.
+- Cuando pregunte «¿con qué correo está la base de datos?», responder con el correo guardado en la memoria local de Claude.
+- **Clave privada de Firebase** (`secrets/house-53644-firebase-adminsdk-*.json`, copia en `Downloads`): **nunca leerla, mostrarla, pegarla en el chat ni subirla**. `secrets/` está en `.gitignore`.
+- El repo es **público**: no escribir correos, contraseñas ni secretos en archivos del proyecto. No mostrar contraseñas al inspeccionar la base.
+- No borrar datos reales. Mis pruebas en la nube solo con ids `TEST-` (p. ej. habitación `TEST-ROOM-9999`) y se borran al terminar. Para pruebas de interfaz usar copia local sin nube: `sed 's#https://gfqukwxiaftxppjcdtjz.supabase.co#https://offline.invalid#' index.html > zz-test-offline.html` (en `.gitignore`).
+- Deuda aceptada / fuera de alcance: RLS abiertas (`anon_full_access`), contraseñas en texto plano, fotos como Data URL.
 
-## Arquitectura
-- Fuente en `src/`: `core.js`, `components.jsx`, `admin.jsx`, `employee.jsx`, `supervisor.jsx`, `app.jsx`, `template.html`, `styles.base.css`, `styles.extra.css`.
-- Build: `cd tools && npm install && node build.mjs` (esbuild, quita BOM, genera `index.html`).
-- Respaldo original en `backup/`. `README.md` explica fuente y publicación.
-- Archivos a publicar en raíz del repo: `index.html`, `sw.js` (CACHE `cc-housekeeping-v3`), `manifest.json`, `manifest-aseo.json`, `manifest-supervisor.json`, `manifest-admin.json`, `firebase-messaging-sw.js`, carpeta `icons/`.
-- SQL / funciones: `schema.sql`, `supabase/migration-2026-10-18.sql`, `supabase/migration-2026-10-19-recepcion.sql`, `supabase/functions/notify-verification/index.ts`, `supabase/README-deploy.md`.
-- Specs/planes: `docs/superpowers/specs/2026-10-18-react-supervisor-push-design.md` y `docs/superpowers/plans/2026-10-18-react-supervisor-push.md`.
+## Datos reales en la base (no borrar)
+- Usuarios: `admin` (ADMIN), `sr` (VL / supervisor).
+- Colaboradores: `EMP-mwwzb10t53s3k` (doc 1082, el usuario lo usa para pruebas de aseo) y `EMP-mwwzcb8qaowzd`.
+- 2 pisos, habitación 101, 9 artículos de inventario (sembrados por el SQL).
 
-## Funcionalidad publicada
-- URLs por rol (misma página): aseo `?app=aseo`, supervisor `?app=supervisor` (`?view=supervisor` usado por push), admin `?app=admin`. Cada una exige su rol y es PWA separada. Acceso oculto: 5 toques al logo "CC" revela login de supervisor.
-- Login tolerante a mayúsculas y espacios.
-- Flujo de habitación: `DISPONIBLE → OCUPADA` (admin ocupa/da salida, check-in/out) → `PENDIENTE DE LIMPIEZA` (manual o automático al vencer check-out vía pg_cron + respaldo en cliente) → aseo "Tomar servicio" o VL/admin asigna → `EN LIMPIEZA` (iniciar escaneando QR) → `EN VERIFICACIÓN` (push a VL) → supervisor aprueba (`DISPONIBLE`), rechaza (vuelve a `EN LIMPIEZA`) o agrega novedad.
-- Admin: Usuarios (Admin/VL), enlaces de acceso copiables, casilla "Rol limpieza", generador de código de 6 dígitos. Supervisor: pestañas Verificación / Servicios / Personal de aseo.
-- Push (FCM v1): registro por rol; banner "Activar notificaciones".
-- Última corrección: guardado de habitaciones ya no choca con QR/NFC repetidos; la app valida duplicados, muestra el motivo real y revierte el cambio local si la nube rechaza (también en pisos).
+## Cómo trabajar
+- **Fuente:** `src/` → `core.js` (datos, Supabase, QR/NFC, push), `components.jsx` (logo, instalación PWA, QR en pantalla), `admin.jsx`, `employee.jsx`, `supervisor.jsx`, `app.jsx`, `template.html`, `styles.base.css`, `styles.extra.css`.
+- **Compilar:** `cd tools && npm install && node build.mjs` → genera `index.html` y los 4 `manifest*.json` (no editarlos a mano). No usar `| head` con el build (corta la salida y falla con EPIPE).
+- **Publicar:** la carpeta del proyecto ES el repo git → `git add -A && git commit -m "..." && git push` (gh logueado como `cashlessmot2026`). Pages tarda 1–2 min. Autor de commits: `cashlessmot2026 <cashlessmot2026@users.noreply.github.com>`.
+- **Supabase (lo hace el usuario):** SQL en el SQL Editor; función con la CLI (`supabase link --project-ref gfqukwxiaftxppjcdtjz`); secrets en Edge Functions → Secrets. Guía: `supabase/README-deploy.md`.
+- **Comprobar la función sin enviar nada:** `POST …/functions/v1/notify-verification` con `{"kind":"ping"}` → `{"ignored":true}`. Con `{"kind":"assigned","number":"PRUEBA","assigned_to":"<EMP id>"}` envía una push real a ese colaborador.
+- **Pruebas con Playwright:** `print()` bloquea el navegador → stubear `iframe.contentWindow.print`. Headless no conserva notificaciones del sistema (verificar interceptando `showNotification`). `DB` no está en `window` (usar `typeof DB`).
 
-## Inventario de habitación (2026-11-25)
-- Aseo: al pulsar FINALIZAR LIMPIEZA se abre el checklist (`InventoryChecklist` en `src/employee.jsx`); guarda en `inventory_checks` y luego finaliza.
-- Admin: menú «📦 Inventario» (Revisiones / Artículos, CRUD de `inventory_items`, banner para activar push). Último inventario en el detalle de habitación y aviso en el Dashboard.
-- diferencia = contado ≠ esperado; cambio = contado ≠ revisión anterior de esa habitación.
-- Push: trigger `trg_inventory_alert` → Edge Function `kind: 'inventory'` → tokens con `role = 'ADMIN'`.
-- SQL de instalación completa: `supabase/aquamar-setup.sql` (= schema.sql + migration-2026-11-25-inventario.sql).
+## Arquitectura y funcionalidad
+- **URLs por rol** (misma página, cada una instalable como app): aseo `?app=aseo`, supervisor `?app=supervisor` (`?view=supervisor` desde la push), recepción `?app=admin`. Enlace de habitación `?r=ROOM-xxx` (abre el aseo en esa habitación; `?room=` también se acepta). Acceso oculto al supervisor: 5 toques al logo.
+- **Flujo de habitación:** `DISPONIBLE → OCUPADA` (admin «Ocupar» con check-in/out) → `PENDIENTE DE LIMPIEZA` (salida manual o automática por pg_cron) → push al aseo disponible → «Tomar servicio» o asignación del supervisor/admin → escanear QR → `EN LIMPIEZA` → checklist de inventario → `EN VERIFICACIÓN` (push al supervisor) → aprobar (`DISPONIBLE`) / rechazar (vuelve a `EN LIMPIEZA`) / novedad.
+- **Un servicio a la vez:** `isEmployeeBusy` (limpieza iniciada o habitación tomada/asignada sin terminar) bloquea «Tomar servicio», la asignación y el inicio por QR de otra habitación.
+- **Inventario:** catálogo `inventory_items` (admin: crear/editar/eliminar, por categoría y tipo de habitación); revisión `inventory_checks` al finalizar (diferencia = contado ≠ esperado; cambio = ≠ revisión anterior). Trigger `trg_inventory_alert` → push a `role = 'ADMIN'`.
+- **Push:** `push_tokens` (token, username, role ADMIN/VL/EMPLEADA, employee_id). Triggers `trg_room_status` (EN VERIFICACIÓN / PENDIENTE DE LIMPIEZA) y `trg_room_assigned` → `pg_net` → función → FCM HTTP v1. Con la app abierta, `onMessage` muestra igual la notificación del sistema; cerrada o en otra pestaña la muestra `firebase-messaging-sw.js`.
+- **QR:** reales (`qrcode-generator` 1.4.4), SVG nítido, corrección Q, 37×37 módulos. Etiquetas `printRoomLabels` (QR 70 mm) y `downloadRoomQr` (PNG 1200×1650). Escáner `QR.open` + `QR.loop`: lector nativo + jsQR de respaldo, 1920×1080 con enfoque continuo; `QrScan`/`CameraHelp` muestran el estado y cómo dar permiso de cámara.
+- **NFC:** Web NFC (Chrome Android) con `NFC.read`/`NFC.stop`; los TAG graban enlace + texto; en iPhone `NfcHelp` explica la lectura nativa.
+- **PWA:** `useInstallPrompt` / `InstallButton` / `InstallCard` / `InstallHelp`; `beforeinstallprompt` capturado en `template.html`. Service worker `sw.js` (caché `aquamare-housekeeping-v4`).
+- **Librerías CDN:** React 18.3.1, Chart.js **4.4.1** (4.4.4 daba 404), Leaflet 1.9.4, jsQR 1.4.0 (**jsDelivr**; cdnjs daba 404), qrcode-generator 1.4.4, supabase-js@2, Firebase 10.12.2.
 
-## Pendiente / próximos pasos
-1. **Decir/hacer por el usuario:** Habitaciones → Editar la 102 → Guardar (corrige su QR a `ROOM-102`, NFC `NFC-ROOM-102`); después ya se puede crear la 101. Revisar etiqueta QR impresa de la 102.
-2. Confirmar que la push de prueba llegó al celular (VL `sent:1`, aseo `sent:1` en la prueba).
-3. Asignar código de acceso a `andres`.
-4. Cada celular debe pulsar "Activar notificaciones" (iPhone: PWA instalada, iOS ≥ 16.4).
-5. Si pg_cron no está disponible, la salida automática solo ocurre con admin/supervisor conectado.
-6. Prueba end-to-end real de push (tocaría habitación real) solo si el usuario lo pide.
+---
 
-## Notas de proceso
-- Herramienta `find` de Chrome falla a veces con "Permission denied" la primera vez en github.com; reintentar.
-- En la subida a GitHub, el aviso "ProTip" mueve el botón Commit; usar `find` + ref.
-- Transcript completo: `C:\Users\victo\.claude\projects\C--Users-victo-OneDrive-Desktop-limpieza\13981644-db41-4d6b-a411-6022c29fecd9.jsonl`
+## Bitácora (más reciente primero)
 
-## Marca AQUAMARE + tema claro + PWA (2026-11-25)
-- Nombre: AQUAMARE (Aquamare Hotel). Logo desde `icons/aqua.png` (original del usuario; respaldo en `backup/icons-original-2026-11-25/`).
-- Generados: `icons/logo-aquamare.png` (blanco), `icons/logo-aquamare-navy.png` (azul marino), `aquamare-mark*.png` (ola), íconos 192/512, maskable 192/512, apple-touch 180, `favicon-64.png`. Azul de marca `#061045`.
-- Tema claro (blanco / azules / negro) en `src/styles.base.css` + `src/styles.extra.css`; menú del admin azul marino con logo blanco (`<Logo light />`).
-- PWA: `useInstallPrompt`, `InstallButton`, `InstallCard`, `InstallHelp` en `src/components.jsx`; `beforeinstallprompt` se captura en `template.html` (window.__bip). Manifests generados por `tools/build.mjs` (no editar los JSON a mano).
-- Corregido: Chart.js 4.4.4 en cdnjs daba 404 → ahora 4.4.1.
+### 2026-11-25
+- **Un servicio a la vez + push solo al aseo disponible** (`560ee35`): la función excluye a quien tiene otra habitación tomada/asignada; la app impide iniciar otra habitación por QR. Se mantuvo «Servicio asignado».
+- **Revisión de la función push** (`8945d2e`): API correcta (FCM HTTP v1 `projects/house-53644/messages:send`, OAuth `firebase.messaging`), mismo proyecto en función, app y SW. Corregido: ya no borra tokens ante cualquier `INVALID_ARGUMENT`. Prueba real: `{"sent":1,"removed":1}`. El usuario confirmó que le llegan las push.
+- **Repo completo** (`a89984a`): la carpeta del proyecto pasó a ser el repo; `.gitignore` protege `secrets/` y `node_modules`; README con estructura y cómo publicar.
+- **QR nítido** (`1e7899c`): SVG, corrección Q, enlace corto `?r=`, etiqueta de 70 mm, descarga PNG.
+- **Cámara / permisos** (`e14e0cc`): estados visibles, ayuda para permiso bloqueado (Android / iPhone / PC / navegador de WhatsApp), reintentar, lector híbrido nativo + jsQR.
+- **QR reales y NFC** (`66c8dbd`): el QR anterior era un patrón falso sin datos; NFC con AbortController y TAG con enlace.
+- **Push con la app abierta** (`e08adc7`): `onMessage` muestra la notificación del sistema; jsQR movido a jsDelivr.
+- **Secret faltante**: la función respondía «Falta el secret FCM_SERVICE_ACCOUNT»; el usuario lo cargó en Supabase.
+- **«Ocupar» fallaba**: `rooms_status_check` sin `OCUPADA` (se había corrido un SQL antiguo). El usuario ejecutó `fix-2026-11-25-estado-ocupada.sql`. SQL antiguos marcados «NO EJECUTAR». Botón «🔒 Ocupar» con la etapa (`4511b84`).
+- **Marca AQUAMARE + tema claro + PWA**: logo e íconos desde `icons/aqua.png` (originales en `backup/icons-original-2026-11-25/`), tema claro, instalación en Android / iPhone / PC, manifests generados por `build.mjs`. Corregido Chart.js (404).
+- **Inventario de habitación**: checklist al finalizar la limpieza, sección Inventario del admin, push al admin por diferencias o cambios.
+- **Migración**: de Supabase `redljbblmveabflxeddv` / repo `cashlesscolombia-blip/limpieza` a Supabase `gfqukwxiaftxppjcdtjz` / repo `cashlessmot2026/aquamar`.
+
+### 2026-10-18 / 19 (proyecto anterior)
+- Migración de JS puro a React (respaldo en `backup/index-vanilla-2026-10-18.html`), rol supervisor (VL), estado EN VERIFICACIÓN, push FCM, recepción (ocupación, check-in/out, servicios de limpieza), URLs por rol.
+- Specs/planes de esa etapa: `docs/superpowers/specs/2026-10-18-react-supervisor-push-design.md`, `docs/superpowers/plans/2026-10-18-react-supervisor-push.md`.
+
+### 2026-09 (inicio)
+- Ver `resumen-conversacion.md`: TAG NFC y QR por habitación, PWA inicial, eliminación de datos demo, administradores, login de colaboradores con cédula/correo.
