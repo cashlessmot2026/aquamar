@@ -291,7 +291,8 @@ begin
       'number',      new.number::text,
       'status',      new.status,
       'assigned_to', new.assigned_to
-    )
+    ),
+    timeout_milliseconds := 20000  -- el límite por defecto (5 s) cortaba la función en frío
   );
   return new;
 exception when others then
@@ -401,7 +402,8 @@ begin
       'changes',     new.changes,
       'items',       new.items,
       'notes',       new.notes
-    )
+    ),
+    timeout_milliseconds := 20000
   );
   return new;
 exception when others then
@@ -430,3 +432,21 @@ end $$;
 --   select * from public.inventory_items order by category, sort_order;
 --   select id, differences, changes from public.inventory_checks order by timestamp desc limit 5;
 --   select status_code, content from net._http_response order by id desc limit 3;
+
+-- 7) Registro de push (2026-11-26): la función guarda aquí cada aviso ----
+create table if not exists public.push_log (
+  id         bigserial primary key,
+  created_at timestamptz not null default now(),
+  event      text,
+  room_id    text,
+  number     text,
+  sent       integer,
+  removed    integer,
+  recipients jsonb,
+  error      text
+);
+create index if not exists idx_push_log_created on public.push_log(created_at desc);
+alter table public.push_log enable row level security;
+drop policy if exists "anon_read" on public.push_log;
+create policy "anon_read" on public.push_log for select to anon, authenticated using (true);
+--   select * from public.push_log order by created_at desc limit 20;
