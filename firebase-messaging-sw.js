@@ -1,5 +1,5 @@
 /* Service worker de Firebase Cloud Messaging: recibe las push con la app cerrada
-   (aviso a los supervisores VL cuando una habitación queda EN VERIFICACIÓN). */
+   (Aquamare: verificación, servicios de limpieza e inventario). */
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
 

@@ -1,11 +1,17 @@
 'use strict';
 
 // Service worker de la app (caché offline). Las push las maneja firebase-messaging-sw.js.
-const CACHE_VERSION = 'aquamar-housekeeping-v1';
+const CACHE_VERSION = 'aquamare-housekeeping-v2';
 const PRECACHE_URLS = [
   './',
   './index.html',
   './manifest.json',
+  './manifest-aseo.json',
+  './manifest-supervisor.json',
+  './manifest-admin.json',
+  './icons/logo-aquamare.png',
+  './icons/logo-aquamare-navy.png',
+  './icons/favicon-64.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-192.png',
@@ -13,7 +19,7 @@ const PRECACHE_URLS = [
   './icons/apple-touch-icon.png',
   'https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js',
